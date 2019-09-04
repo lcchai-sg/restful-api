@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const orderSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
+    // productId is also of type ObjectId
+    // reference Product
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     quantity: { type: Number, default: 1 }
 });

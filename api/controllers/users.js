@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
+const config = require('../../config');
 
+// check if token can perform get on all users
 exports.allowedGet = async (req, res, next) => {
     try {
         const result = await User.findOne({ email: req.userData.email });
@@ -18,6 +20,7 @@ exports.allowedGet = async (req, res, next) => {
     next();
 }
 
+// check if token can perform delete on user
 exports.allowedDelete = async (req, res, next) => {
     try {
         const result = await User.findOne({ email: req.userData.email });
@@ -33,6 +36,9 @@ exports.allowedDelete = async (req, res, next) => {
     next();
 }
 
+// sign up new user
+// do not allow duplicate email
+// password will be encrypted
 exports.users_sign_up = async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
@@ -44,6 +50,7 @@ exports.users_sign_up = async (req, res) => {
             const hash = await bcrypt.hash(req.body.password, 10);
             const user = new User({
                 _id: new mongoose.Types.ObjectId(),
+                username: req.body.username,
                 email: req.body.email,
                 password: hash,
                 allowedGet: req.body.allowedGet,
@@ -63,6 +70,8 @@ exports.users_sign_up = async (req, res) => {
     }
 }
 
+// varify user login
+// if login is successful, return jwt token that is valid for 1h use
 exports.users_login = async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
@@ -76,7 +85,7 @@ exports.users_login = async (req, res) => {
                 const token = await jwt.sign({
                     email: user.email,
                     userId: user._id
-                }, process.env.JWT_KEY, {
+                }, config.JWT_KEY, {
                     expiresIn: "1h"
                 });
                 return res.status(200).json({
@@ -96,6 +105,8 @@ exports.users_login = async (req, res) => {
     }
 }
 
+// get all users
+// for users who have allowedGet set to true
 exports.users_get_all = async (req, res) => {
     try {
         const result = await User.find();
@@ -120,8 +131,16 @@ exports.users_get_all = async (req, res) => {
     }
 }
 
+// delete user
+// for users who have allowedDelete set to true
 exports.users_delete = async (req, res) => {
     try {
+        const user = await User.findOne({ email: req.body.email });
+        if (!user) {
+            return res.status(404).json({
+                message: 'Data not found!'
+            });
+        }
         await User.deleteOne({ _id: req.params.userId });
         res.status(200).json({
             message: 'User deleted'

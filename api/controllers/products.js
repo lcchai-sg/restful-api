@@ -1,6 +1,9 @@
-const Product = require('../models/product');
 const mongoose = require('mongoose');
+const Product = require('../models/product');
 
+// get product, use to check if product exist for
+// _details, _update, _delete
+// return result as response
 exports.getProduct = async (req, res, next) => {
     let result;
     try {
@@ -18,6 +21,7 @@ exports.getProduct = async (req, res, next) => {
     next();
 }
 
+// get all products
 exports.products_get_all = async (req, res) => {
     try {
         const products = await Product.find()
@@ -44,6 +48,7 @@ exports.products_get_all = async (req, res) => {
     }
 }
 
+// create new product
 exports.products_create = async (req, res) => {
     try {
         const product = new Product({
@@ -73,6 +78,7 @@ exports.products_create = async (req, res) => {
     }
 }
 
+// get product details
 exports.products_details = async (req, res) => {
     res.status(200).json({
         product: {
@@ -89,6 +95,8 @@ exports.products_details = async (req, res) => {
     });
 }
 
+// update product
+// already checked for product existance
 exports.products_update = async (req, res) => {
     try {
         const updateOps = {};
@@ -110,6 +118,8 @@ exports.products_update = async (req, res) => {
     }
 }
 
+// delete product
+// already checked for product existance
 exports.products_delete = async (req, res) => {
     try {
         await Product.deleteOne({ _id: req.params.id })

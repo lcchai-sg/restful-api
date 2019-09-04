@@ -1,6 +1,6 @@
+const mongoose = require('mongoose');
 const Order = require('../models/order');
 const Product = require('../models/product');
-const mongoose = require('mongoose');
 
 // get an order by id
 // act as middleware for order details / order update / order delete
@@ -18,6 +18,7 @@ exports.getOrder = async(req, res, next) => {
         console.log('Get order by id error: ', err);
         res.status(500).json({ error: err })
     }
+    // pass order data back in response
     res.order = result;
     next();
 }
@@ -26,7 +27,10 @@ exports.getOrder = async(req, res, next) => {
 exports.orders_get_all = async (req, res) => {
     try {
         const results = await Order.find()
+        // fields selected
         .select('_id productId quantity')
+        // reference to product model by productId
+        // retrieve product id, name, price
         .populate('productId', '_id name price');
         res.status(200).json({
             count: results.length,
@@ -48,6 +52,7 @@ exports.orders_get_all = async (req, res) => {
     }
 }
 
+// create order
 exports.orders_create = async (req, res) => {
     try {
         // find productId
@@ -63,7 +68,6 @@ exports.orders_create = async (req, res) => {
 
             // save data
             const result = await order.save();
-            console.log(result);
             res.status(201).json({
                 message: 'Order created successfully',
                 createdOrder: {
@@ -86,6 +90,7 @@ exports.orders_create = async (req, res) => {
     }
 }
 
+// display order details
 exports.orders_details = async (req, res) => {
     res.status(200).json({
         order: {
@@ -101,8 +106,12 @@ exports.orders_details = async (req, res) => {
     });
 }
 
+// update order
 exports.orders_update = async (req, res) => {
     try {
+        // json format for request:
+        // [{ "propName": "field name", "value": "some value" }]
+        // convert request to array
         const updateOps = {};
         for (const ops of req.body) {
             updateOps[ops.propName] = ops.value;
@@ -122,6 +131,7 @@ exports.orders_update = async (req, res) => {
     }
 }
 
+// delete order
 exports.orders_delete = async (req, res) => {
     try {
         await Order.deleteOne({ _id: req.params.id });

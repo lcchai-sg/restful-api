@@ -4,6 +4,7 @@ const multer = require('multer');
 const checkAuth = require('../auth/check-auth');
 const ProductControllers = require("../controllers/products");
 
+// set up multer disk storage
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         cb(null, './uploads/');
@@ -13,6 +14,7 @@ const storage = multer.diskStorage({
     }
 });
 
+// set up filtering
 const fileFilter = (req, file, cb) => {
     // reject a file
     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {

@@ -5,11 +5,12 @@ const morgan = require('morgan');
 const fs = require('file-system');
 const path = require('path');
 const rfs = require('rotating-file-stream');
+const config = require('./config');
 
 const app = express();
 
 // log files directory
-const logDirectory = path.join(__dirname, 'logs');
+const logDirectory = path.join(__dirname, config.logFolder);
 // ensure log directory exists
 fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
 // create a rotating write stream
@@ -21,14 +22,14 @@ var accessLogStream = rfs('access.log', {
 app.use(morgan('combined', { stream: accessLogStream }));
 
 // connect to Mongo db
-mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true })
+mongoose.connect(config.dbconn, { useNewUrlParser: true })
 .then(result => console.log('Mongo DB connected...'))
 .catch(err => console.log('DB connection error: ', err));
 
 // uploading files
-const uploadsDirectory = path.join(__dirname, 'uploads');
+const uploadsDirectory = path.join(__dirname, config.uploadFolder);
 fs.existsSync(uploadsDirectory) || fs.mkdirSync(uploadsDirectory);
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(config.uploadFolder));
 
 // extract json data
 app.use(bodyParser.urlencoded({ extended: false }));
